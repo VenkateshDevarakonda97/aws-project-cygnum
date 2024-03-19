@@ -1,18 +1,30 @@
+import json
+from post_records import put_records
+from get_records import get_records
+from delete_records import delete_records
 def lambda_handler(event, context):
-    # Extract id and Weather from event
-    id = event.get('id')
-    Weather = event.get('Weather')
-
-    # Validate presence of id and Weather
-    if id is None or Weather is None:
-        return {
-            'statusCode': 400,
-            'body': 'Both id and Weather must be provided in the request body.'
-        }
-
-    # Check for other attributes
-    if len(event) != 2 or set(event.keys()) != {'id', 'Weather'}:
-        return {
-            'statusCode': 400,
-            'body': 'Only id and Weather attributes are allowed in the request body.'
-        }
+    
+    request_method = event['httpMethod']
+    if request_method == "POST":
+        try:
+            request_body=json.loads(event['body'])
+        except Exception:
+            request_body=None
+        return put_records(request_body)
+        
+    elif request_method == "GET":
+        try:
+            id = event['queryStringParameters'].get('id')
+        except Exception:
+            id = None
+        return get_records(id)
+        
+    elif request_method == "DELETE":
+        try:
+            request_body=json.loads(event['body'])
+            id = request_body.get('id')
+        except Exception:
+            id=None
+        return delete_records(id)
+        
+    
